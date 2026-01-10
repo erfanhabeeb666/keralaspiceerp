@@ -7,10 +7,12 @@ import {
     HiOutlineClipboardDocumentCheck,
     HiOutlineArrowRight,
     HiOutlineUserPlus,
+    HiOutlinePlay,
 } from 'react-icons/hi2';
 import { useAuth } from '../../context/AuthContext';
 import { employeeService } from '../../services/employeeService';
 import { leaveService } from '../../services/leaveService';
+import { attendanceService } from '../../services/attendanceService';
 import toast from 'react-hot-toast';
 
 const DashboardHome = () => {
@@ -22,6 +24,7 @@ const DashboardHome = () => {
         myPendingLeaves: 0,
     });
     const [loading, setLoading] = useState(true);
+    const [schedulerRunning, setSchedulerRunning] = useState(false);
 
     useEffect(() => {
         loadStats();
@@ -106,6 +109,21 @@ const DashboardHome = () => {
             { label: 'Apply for Leave', path: '/staff/leave-apply', icon: HiOutlineClipboardDocumentList },
             { label: 'View Attendance', path: '/staff/attendance', icon: HiOutlineCalendarDays },
         ];
+
+    const handleRunScheduler = async () => {
+        if (schedulerRunning) return;
+
+        setSchedulerRunning(true);
+        try {
+            const response = await attendanceService.generateAttendance();
+            toast.success(response.message || 'Attendance scheduler ran successfully!');
+        } catch (error) {
+            console.error('Error running scheduler:', error);
+            toast.error(error.response?.data?.message || 'Failed to run scheduler');
+        } finally {
+            setSchedulerRunning(false);
+        }
+    };
 
     return (
         <div className="page-container">
@@ -197,6 +215,58 @@ const DashboardHome = () => {
                                 <HiOutlineArrowRight size={16} style={{ color: 'var(--gray-400)' }} />
                             </Link>
                         ))}
+
+                        {/* Run Scheduler Button - Admin Only */}
+                        {isAdmin() && (
+                            <button
+                                onClick={handleRunScheduler}
+                                disabled={schedulerRunning}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--space-3)',
+                                    padding: 'var(--space-4)',
+                                    background: schedulerRunning ? 'var(--success-50)' : 'var(--success-50)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    textDecoration: 'none',
+                                    color: 'var(--success-700)',
+                                    border: '1px solid var(--success-200)',
+                                    transition: 'all var(--transition-fast)',
+                                    cursor: schedulerRunning ? 'wait' : 'pointer',
+                                    opacity: schedulerRunning ? 0.7 : 1,
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!schedulerRunning) {
+                                        e.currentTarget.style.borderColor = 'var(--success-400)';
+                                        e.currentTarget.style.background = 'var(--success-100)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--success-200)';
+                                    e.currentTarget.style.background = 'var(--success-50)';
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'var(--success-600)',
+                                    }}
+                                >
+                                    <HiOutlinePlay size={20} style={{
+                                        animation: schedulerRunning ? 'pulse 1s ease-in-out infinite' : 'none'
+                                    }} />
+                                </div>
+                                <span style={{ fontWeight: 500, flex: 1 }}>
+                                    {schedulerRunning ? 'Running...' : 'Run Scheduler'}
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

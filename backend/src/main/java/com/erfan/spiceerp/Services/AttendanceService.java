@@ -2,6 +2,7 @@ package com.erfan.spiceerp.Services;
 
 import com.erfan.spiceerp.Dto.AttendanceDto;
 import com.erfan.spiceerp.Enums.AttendanceStatus;
+import com.erfan.spiceerp.Enums.LeaveStatus;
 import com.erfan.spiceerp.Enums.Status;
 import com.erfan.spiceerp.Exception.ResourceNotFoundException;
 import com.erfan.spiceerp.Models.Attendance;
@@ -66,7 +67,7 @@ public class AttendanceService {
 
             // Check for approved leave for today
             List<LeaveRequest> approvedLeaves = leaveRequestRepository
-                    .findApprovedLeavesForDate(employee.getId(), today);
+                    .findApprovedLeavesForDate(employee.getId(), today, LeaveStatus.APPROVED);
 
             Attendance attendance;
             if (!approvedLeaves.isEmpty()) {

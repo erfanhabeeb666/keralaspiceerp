@@ -128,7 +128,7 @@ public class EmployeeService {
      */
     @Transactional(readOnly = true)
     public List<EmployeeDto> getAllActiveEmployees() {
-        return employeeRepository.findAllActive().stream()
+        return employeeRepository.findAllActive(Status.ACTIVE).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }

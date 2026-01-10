@@ -68,7 +68,7 @@ public class LeaveService {
 
         // Check for overlapping approved leaves
         if (leaveRequestRepository.hasOverlappingApprovedLeave(
-                employeeId, leaveRequestDto.getStartDate(), leaveRequestDto.getEndDate(), null)) {
+                employeeId, leaveRequestDto.getStartDate(), leaveRequestDto.getEndDate(), null, LeaveStatus.APPROVED)) {
             throw new BusinessException("Leave request overlaps with another approved leave");
         }
 
@@ -127,7 +127,8 @@ public class LeaveService {
                 leaveRequest.getEmployee().getId(),
                 leaveRequest.getStartDate(),
                 leaveRequest.getEndDate(),
-                leaveRequestId)) {
+                leaveRequestId,
+                LeaveStatus.APPROVED)) {
             throw new BusinessException("This leave overlaps with another approved leave");
         }
 
