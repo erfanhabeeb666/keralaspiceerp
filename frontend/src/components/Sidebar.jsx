@@ -13,7 +13,7 @@ import {
     HiChevronDown,
     HiChevronRight,
     HiOutlineBars3,
-    HiXMark,
+    HiOutlineChevronDoubleLeft,
 } from 'react-icons/hi2';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,7 +30,7 @@ const menuItems = [
             { label: 'Employees', path: '/staff', icon: HiOutlineUsers, adminOnly: true },
             { label: 'Attendance', path: '/staff/attendance', icon: HiOutlineCalendarDays },
             { label: 'Attendance Stats', path: '/staff/attendance-stats', icon: HiOutlineChartBar, adminOnly: true },
-            { label: 'Apply Leave', path: '/staff/leave-apply', icon: HiOutlineDocumentText },
+            { label: 'Apply Leave', path: '/staff/leave-apply', icon: HiOutlineDocumentText, employeeOnly: true },
             { label: 'Leave Approval', path: '/staff/leave-approval', icon: HiOutlineClipboardDocumentCheck, adminOnly: true },
         ],
     },
@@ -75,45 +75,102 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         return false;
     };
 
+    const sidebarStyles = {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        width: isCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
+        background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        zIndex: 50,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '4px 0 24px -4px rgba(0, 0, 0, 0.3)',
+        overflow: 'hidden',
+    };
+
+    const logoContainerStyles = {
+        height: 'var(--navbar-height)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: isCollapsed ? '0 0.75rem' : '0 1.25rem',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        gap: '0.625rem',
+        flexShrink: 0,
+    };
+
+    const logoIconStyles = {
+        width: 36,
+        height: 36,
+        borderRadius: '0.625rem',
+        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontWeight: 700,
+        fontSize: '0.875rem',
+        flexShrink: 0,
+        boxShadow: '0 4px 12px -2px rgba(99, 102, 241, 0.4)',
+        transition: 'all 0.3s ease',
+        letterSpacing: '-0.02em',
+    };
+
     const renderMenuItem = (item, depth = 0) => {
         const Icon = item.icon;
         const hasChildren = item.children && item.children.length > 0;
         const isExpanded = expandedMenus.includes(item.label);
         const isActive = isMenuActive(item);
 
-        // Filter children based on adminOnly
         const visibleChildren = hasChildren
-            ? item.children.filter(child => !child.adminOnly || isAdmin())
+            ? item.children.filter(child => (!child.adminOnly || isAdmin()) && (!child.employeeOnly || !isAdmin()))
             : [];
 
         if (item.adminOnly && !isAdmin()) return null;
+        if (item.employeeOnly && isAdmin()) return null;
+
+        // Compact item styles
+        const itemStyles = {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.625rem',
+            width: '100%',
+            padding: isCollapsed ? '0.5rem' : '0.5rem 0.75rem',
+            marginBottom: '0.125rem',
+            borderRadius: '0.5rem',
+            color: isActive ? 'white' : 'rgba(255, 255, 255, 0.65)',
+            background: isActive
+                ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.15) 100%)'
+                : 'transparent',
+            border: isActive ? '1px solid rgba(99, 102, 241, 0.25)' : '1px solid transparent',
+            cursor: item.disabled ? 'not-allowed' : 'pointer',
+            transition: 'all 0.15s ease',
+            textAlign: 'left',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+            opacity: item.disabled ? 0.5 : 1,
+            textDecoration: 'none',
+            position: 'relative',
+            overflow: 'hidden',
+            fontSize: '0.8125rem',
+        };
+
         if (item.disabled) {
             return (
                 <li key={item.label}>
-                    <div
-                        className="sidebar-item disabled"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            padding: isCollapsed ? '0.75rem' : '0.75rem 1rem',
-                            marginBottom: '0.25rem',
-                            borderRadius: '0.5rem',
-                            color: 'var(--gray-400)',
-                            cursor: 'not-allowed',
-                            opacity: 0.6,
-                            justifyContent: isCollapsed ? 'center' : 'flex-start',
-                        }}
-                    >
-                        <Icon size={20} />
+                    <div style={itemStyles}>
+                        <Icon size={18} />
                         {!isCollapsed && (
                             <>
-                                <span style={{ flex: 1 }}>{item.label}</span>
+                                <span style={{ flex: 1, fontWeight: 500 }}>{item.label}</span>
                                 <span style={{
-                                    fontSize: '0.625rem',
-                                    background: 'var(--gray-100)',
-                                    padding: '0.125rem 0.5rem',
+                                    fontSize: '0.5625rem',
+                                    fontWeight: 600,
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    padding: '0.125rem 0.375rem',
                                     borderRadius: '9999px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
                                 }}>
                                     Soon
                                 </span>
@@ -129,34 +186,41 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 <li key={item.label}>
                     <button
                         onClick={() => toggleMenu(item.label)}
-                        className="sidebar-item"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            width: '100%',
-                            padding: isCollapsed ? '0.75rem' : '0.75rem 1rem',
-                            marginBottom: '0.25rem',
-                            borderRadius: '0.5rem',
-                            color: isActive ? 'var(--primary-600)' : 'var(--gray-600)',
-                            background: isActive ? 'var(--primary-50)' : 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                            textAlign: 'left',
-                            justifyContent: isCollapsed ? 'center' : 'flex-start',
+                        style={itemStyles}
+                        onMouseEnter={(e) => {
+                            if (!isActive) {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                e.currentTarget.style.color = 'white';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive) {
+                                e.currentTarget.style.background = 'transparent';
+                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.65)';
+                            }
                         }}
                     >
-                        <Icon size={20} />
+                        <Icon size={18} />
                         {!isCollapsed && (
                             <>
                                 <span style={{ flex: 1, fontWeight: 500 }}>{item.label}</span>
-                                {isExpanded ? <HiChevronDown size={16} /> : <HiChevronRight size={16} />}
+                                <div style={{
+                                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.2s ease',
+                                }}>
+                                    <HiChevronDown size={14} />
+                                </div>
                             </>
                         )}
                     </button>
                     {!isCollapsed && isExpanded && (
-                        <ul style={{ listStyle: 'none', margin: 0, padding: 0, marginLeft: '1rem' }}>
+                        <ul style={{
+                            listStyle: 'none',
+                            margin: 0,
+                            padding: '0.125rem 0 0.25rem 0.625rem',
+                            borderLeft: '1px solid rgba(99, 102, 241, 0.25)',
+                            marginLeft: '1.25rem',
+                        }}>
                             {visibleChildren.map(child => renderMenuItem(child, depth + 1))}
                         </ul>
                     )}
@@ -168,24 +232,32 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             <li key={item.label}>
                 <NavLink
                     to={item.path}
-                    className="sidebar-item"
                     style={({ isActive }) => ({
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: isCollapsed ? '0.75rem' : '0.75rem 1rem',
-                        marginBottom: '0.25rem',
-                        borderRadius: '0.5rem',
-                        color: isActive ? 'var(--primary-600)' : 'var(--gray-600)',
-                        background: isActive ? 'var(--primary-50)' : 'transparent',
-                        textDecoration: 'none',
-                        fontWeight: isActive ? 500 : 400,
-                        transition: 'all 0.15s ease',
-                        justifyContent: isCollapsed ? 'center' : 'flex-start',
+                        ...itemStyles,
+                        color: isActive ? 'white' : 'rgba(255, 255, 255, 0.65)',
+                        background: isActive
+                            ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.15) 100%)'
+                            : 'transparent',
+                        border: isActive ? '1px solid rgba(99, 102, 241, 0.25)' : '1px solid transparent',
                     })}
                 >
-                    <Icon size={20} />
-                    {!isCollapsed && <span>{item.label}</span>}
+                    {({ isActive }) => (
+                        <>
+                            <Icon size={18} />
+                            {!isCollapsed && <span style={{ fontWeight: isActive ? 600 : 500 }}>{item.label}</span>}
+                            {isActive && !isCollapsed && (
+                                <div style={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    width: 5,
+                                    height: 5,
+                                    borderRadius: '50%',
+                                    background: '#a855f7',
+                                    boxShadow: '0 0 6px #a855f7',
+                                }} />
+                            )}
+                        </>
+                    )}
                 </NavLink>
             </li>
         );
@@ -202,61 +274,35 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                         display: 'none',
                         position: 'fixed',
                         inset: 0,
-                        background: 'rgba(0, 0, 0, 0.5)',
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: 'blur(4px)',
                         zIndex: 40,
                     }}
                 />
             )}
 
-            <aside
-                className="sidebar"
-                style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    height: '100vh',
-                    width: isCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
-                    background: 'white',
-                    borderRight: '1px solid var(--gray-200)',
-                    transition: 'width 0.2s ease',
-                    zIndex: 50,
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}
-            >
+            <aside style={sidebarStyles}>
                 {/* Logo */}
-                <div
-                    style={{
-                        height: 'var(--navbar-height)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: isCollapsed ? '0 1rem' : '0 1.5rem',
-                        borderBottom: '1px solid var(--gray-100)',
-                        gap: '0.75rem',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '0.5rem',
-                            background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '1.125rem',
-                        }}
-                    >
+                <div style={logoContainerStyles}>
+                    <div style={logoIconStyles}>
                         KS
                     </div>
                     {!isCollapsed && (
-                        <div>
-                            <div style={{ fontWeight: 700, color: 'var(--gray-900)', fontSize: '1rem' }}>
+                        <div style={{ overflow: 'hidden' }}>
+                            <div style={{
+                                fontWeight: 700,
+                                color: 'white',
+                                fontSize: '0.9375rem',
+                                letterSpacing: '-0.02em',
+                                lineHeight: 1.2,
+                            }}>
                                 Kerala Spice
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>
+                            <div style={{
+                                fontSize: '0.6875rem',
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                fontWeight: 500,
+                            }}>
                                 ERP System
                             </div>
                         </div>
@@ -264,14 +310,36 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 </div>
 
                 {/* Navigation */}
-                <nav style={{ flex: 1, overflowY: 'auto', padding: '1rem 0.75rem' }}>
+                <nav style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: '0.75rem 0.625rem',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(255, 255, 255, 0.1) transparent',
+                }}>
+                    {!isCollapsed && (
+                        <div style={{
+                            fontSize: '0.625rem',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            color: 'rgba(255, 255, 255, 0.3)',
+                            padding: '0 0.75rem',
+                            marginBottom: '0.5rem',
+                        }}>
+                            Menu
+                        </div>
+                    )}
                     <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                         {menuItems.map(item => renderMenuItem(item))}
                     </ul>
                 </nav>
 
                 {/* Collapse Button */}
-                <div style={{ padding: '1rem', borderTop: '1px solid var(--gray-100)' }}>
+                <div style={{
+                    padding: '0.75rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                }}>
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         style={{
@@ -280,16 +348,33 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '0.5rem',
-                            background: 'var(--gray-50)',
-                            border: '1px solid var(--gray-200)',
+                            gap: '0.375rem',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
                             borderRadius: '0.5rem',
-                            color: 'var(--gray-600)',
+                            color: 'rgba(255, 255, 255, 0.6)',
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                            e.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                            e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
                         }}
                     >
-                        {isCollapsed ? <HiOutlineBars3 size={20} /> : <HiXMark size={20} />}
+                        {isCollapsed ? (
+                            <HiOutlineBars3 size={16} />
+                        ) : (
+                            <>
+                                <HiOutlineChevronDoubleLeft size={14} />
+                                <span>Collapse</span>
+                            </>
+                        )}
                     </button>
                 </div>
             </aside>

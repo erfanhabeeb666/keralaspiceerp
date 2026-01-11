@@ -118,8 +118,15 @@ function App() {
                                 }
                             />
 
-                            {/* Leave Application (All authenticated users) */}
-                            <Route path="leave-apply" element={<LeaveApply />} />
+                            {/* Leave Application (Employee only - not for admin) */}
+                            <Route
+                                path="leave-apply"
+                                element={
+                                    <PrivateRoute employeeOnly>
+                                        <LeaveApply />
+                                    </PrivateRoute>
+                                }
+                            />
 
                             {/* Leave Approval (Admin only) */}
                             <Route

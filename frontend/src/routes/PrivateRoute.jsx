@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const PrivateRoute = ({ children, adminOnly = false }) => {
+const PrivateRoute = ({ children, adminOnly = false, employeeOnly = false }) => {
     const { isAuthenticated, loading, isAdmin } = useAuth();
     const location = useLocation();
 
@@ -41,6 +41,10 @@ const PrivateRoute = ({ children, adminOnly = false }) => {
                 </div>
             </div>
         );
+    }
+
+    if (employeeOnly && isAdmin()) {
+        return <Navigate to="/" replace />;
     }
 
     return children;
