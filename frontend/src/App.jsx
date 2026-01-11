@@ -11,6 +11,7 @@ import DashboardHome from './pages/Dashboard/DashboardHome';
 import EmployeeList from './pages/Dashboard/Staff/EmployeeList';
 import EmployeeForm from './pages/Dashboard/Staff/EmployeeForm';
 import AttendanceCalendar from './pages/Dashboard/Staff/AttendanceCalendar';
+import AttendanceStats from './pages/Dashboard/Staff/AttendanceStats';
 import LeaveApply from './pages/Dashboard/Staff/LeaveApply';
 import LeaveApproval from './pages/Dashboard/Staff/LeaveApproval';
 
@@ -106,6 +107,16 @@ function App() {
 
                             {/* Attendance (All authenticated users) */}
                             <Route path="attendance" element={<AttendanceCalendar />} />
+
+                            {/* Attendance Statistics (Admin only) */}
+                            <Route
+                                path="attendance-stats"
+                                element={
+                                    <PrivateRoute adminOnly>
+                                        <AttendanceStats />
+                                    </PrivateRoute>
+                                }
+                            />
 
                             {/* Leave Application (All authenticated users) */}
                             <Route path="leave-apply" element={<LeaveApply />} />

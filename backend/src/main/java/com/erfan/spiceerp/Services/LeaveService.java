@@ -307,8 +307,8 @@ public class LeaveService {
             throw new BusinessException("Start date and end date are required");
         }
 
-        if (startDate.isBefore(today)) {
-            throw new BusinessException("Start date cannot be in the past");
+        if (!startDate.isAfter(today)) {
+            throw new BusinessException("Leave request must be submitted at least one day in advance");
         }
 
         if (endDate.isBefore(startDate)) {

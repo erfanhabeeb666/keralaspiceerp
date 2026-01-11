@@ -15,8 +15,9 @@ import { format, addDays, differenceInDays } from 'date-fns';
 
 const validateLeave = (values) => {
     const errors = {};
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     if (!values.leaveType) {
         errors.leaveType = 'Leave type is required';
@@ -24,14 +25,21 @@ const validateLeave = (values) => {
 
     if (!values.startDate) {
         errors.startDate = 'Start date is required';
-    } else if (new Date(values.startDate) < today) {
-        errors.startDate = 'Start date cannot be in the past';
+    } else {
+        const startDate = new Date(values.startDate + 'T00:00:00');
+        if (startDate < tomorrow) {
+            errors.startDate = 'Leave request must be submitted at least one day in advance';
+        }
     }
 
     if (!values.endDate) {
         errors.endDate = 'End date is required';
-    } else if (new Date(values.endDate) < new Date(values.startDate)) {
-        errors.endDate = 'End date cannot be before start date';
+    } else if (values.startDate) {
+        const startDate = new Date(values.startDate + 'T00:00:00');
+        const endDate = new Date(values.endDate + 'T00:00:00');
+        if (endDate < startDate) {
+            errors.endDate = 'End date cannot be before start date';
+        }
     }
 
     return errors;
@@ -290,7 +298,7 @@ const LeaveApply = () => {
                                     onBlur={handleBlur}
                                     error={errors.startDate}
                                     touched={touched.startDate}
-                                    min={format(new Date(), 'yyyy-MM-dd')}
+                                    min={format(addDays(new Date(), 1), 'yyyy-MM-dd')}
                                     required
                                 />
                                 <FormInput
@@ -302,7 +310,7 @@ const LeaveApply = () => {
                                     onBlur={handleBlur}
                                     error={errors.endDate}
                                     touched={touched.endDate}
-                                    min={values.startDate || format(new Date(), 'yyyy-MM-dd')}
+                                    min={values.startDate || format(addDays(new Date(), 1), 'yyyy-MM-dd')}
                                     required
                                 />
                             </div>

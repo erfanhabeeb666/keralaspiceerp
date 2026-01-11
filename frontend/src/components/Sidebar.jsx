@@ -29,6 +29,7 @@ const menuItems = [
         children: [
             { label: 'Employees', path: '/staff', icon: HiOutlineUsers, adminOnly: true },
             { label: 'Attendance', path: '/staff/attendance', icon: HiOutlineCalendarDays },
+            { label: 'Attendance Stats', path: '/staff/attendance-stats', icon: HiOutlineChartBar, adminOnly: true },
             { label: 'Apply Leave', path: '/staff/leave-apply', icon: HiOutlineDocumentText },
             { label: 'Leave Approval', path: '/staff/leave-approval', icon: HiOutlineClipboardDocumentCheck, adminOnly: true },
         ],
